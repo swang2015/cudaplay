@@ -1,6 +1,6 @@
 /*
-	A GPU implementation of Bayesian Personalized Ranking.
-	Created by Ashley Wang 
+	A GPU implementation of Bayesian Personalized Ranking
+	Created by Ashley Wang
 */
 
 
@@ -11,7 +11,6 @@
 #include <math.h>
 #include <ctime>
 #include <cstdlib>
-#include <string>
 #include "gputimer.h"
 
 
@@ -35,29 +34,25 @@ struct embedding {
 };
 
 
-void print_embedding(embedding *embed)
-{
-    printf("{ ");
-    for (int i = 0; i < RANK; i++)  { printf("%.3f ", embed->vals[i]); }
-    printf("}\n");
+void print_embedding(embedding *embed) {
+	printf("{ ");
+	for (int i = 0; i < RANK; i++)  { printf("%.3f ", embed->vals[i]); }
+		printf("}\n");
 }
 
 
 __inline__ __device__
 float dot(const embedding * a, const embedding * b) {
-	__syncthreads();
 	float val = 0;
 	for(int i=0; i<RANK; i++) {
 		float a_val = a->vals[i], b_val = b->vals[i];
 		val += a_val* b_val;
 	}
-	__syncthreads();
 	return val;
 }
 
 
-__global__ void bpr_update_kernel(triple * user_items, embedding * user_mat, embedding * prod_mat, 
-								float alpha, float lambda) {
+__global__ void bpr_update_kernel(triple * user_items, embedding * user_mat, embedding * prod_mat, float alpha, float lambda) {
 
 	__shared__ embedding shared_memory;
 	embedding * temp = &shared_memory;
@@ -76,6 +71,8 @@ __global__ void bpr_update_kernel(triple * user_items, embedding * user_mat, emb
 			unseen_val = item_unseen->vals[threadIdx.x];
 
 		temp->vals[threadIdx.x] = seen_val - unseen_val;
+		__syncthreads();
+
 		float score = dot(user, temp);
 		float z = 1.0 / (1.0 + exp(score));
 
