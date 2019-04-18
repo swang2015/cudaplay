@@ -82,9 +82,9 @@ __global__ void bpr_update_kernel(triple * user_items, embedding * user_mat, emb
 
 		if (z < .5) continue;
 
-		user->vals[threadIdx.x] += alpha*(z*(seen_val-unseen_val)-lambda*user_val);
-		item_seen->vals[threadIdx.x] += alpha*(z*user_val-lambda*seen_val);
-		item_unseen->vals[threadIdx.x] += alpha*(-z*user_val-lambda*unseen_val);
+		atomicAdd(&user->vals[threadIdx.x], alpha*(z*(seen_val-unseen_val)-lambda*user_val));
+		atomicAdd(&item_seen->vals[threadIdx.x], alpha*(z*user_val-lambda*seen_val));
+		atomicAdd(&item_unseen->vals[threadIdx.x], alpha*(-z*user_val-lambda*unseen_val));
 	}
 
 }
